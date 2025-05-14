@@ -124,18 +124,36 @@ app.get('/add-post', (req, res) => {
 });
 
 // Database connection
+console.log('Attempting to connect to database with following config:', {
+    host: process.env.MYSQLHOST,
+    user: process.env.MYSQLUSER,
+    database: process.env.MYSQLDATABASE,
+    port: process.env.MYSQLPORT
+    // password omitted for security
+});
+
 const db = mysql.createConnection({
-    host: process.env.MYSQLHOST || 'localhost',
-    user: process.env.MYSQLUSER || 'root',
-    password: process.env.MYSQLPASSWORD || '',
-    database: process.env.MYSQLDATABASE || 'blog_platform',
-    port: process.env.MYSQLPORT || 3306
+    host: process.env.MYSQLHOST,
+    user: process.env.MYSQLUSER,
+    password: process.env.MYSQLPASSWORD,
+    database: process.env.MYSQLDATABASE,
+    port: process.env.MYSQLPORT || 3306,
+    ssl: {
+        rejectUnauthorized: true
+    }
 });
 
 // Connect to database
 db.connect((err) => {
     if (err) {
         console.error('Error connecting to database:', err);
+        console.error('Database connection config:', {
+            host: process.env.MYSQLHOST,
+            user: process.env.MYSQLUSER,
+            database: process.env.MYSQLDATABASE,
+            port: process.env.MYSQLPORT
+            // password omitted for security
+        });
         return;
     }
     console.log('Connected to database successfully');
