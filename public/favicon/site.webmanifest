@@ -1,0 +1,14 @@
+{
+  "name": "My Blog App",
+  "short_name": "Blog App by Dev Amati",
+  "icons": [
+    {
+      "src": "/public/favicon/favicon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#4361ee",
+  "background_color": "#ffffff",
+  "display": "standalone"
+} 
