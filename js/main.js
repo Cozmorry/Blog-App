@@ -2,14 +2,16 @@
 const hamburger = document.querySelector('.hamburger');
 const navLinks = document.querySelector('.nav-links');
 
-hamburger.addEventListener('click', () => {
-    navLinks.classList.toggle('active');
-    hamburger.classList.toggle('active');
-});
+if (hamburger && navLinks) {
+    hamburger.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        hamburger.classList.toggle('active');
+    });
+}
 
 // Close mobile menu when clicking outside
 document.addEventListener('click', (e) => {
-    if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+    if (hamburger && navLinks && !hamburger.contains(e.target) && !navLinks.contains(e.target)) {
         navLinks.classList.remove('active');
         hamburger.classList.remove('active');
     }
@@ -136,13 +138,11 @@ function updateNavigation() {
         logoutBtn.style.display = isLoggedIn && token ? "block" : "none";
     }
 
-    // For index.html, redirect to home.html if logged in
-    if (isLoggedIn && token && window.location.pathname.endsWith("index.html")) {
-        window.location.href = "home.html";
-    }
-
-    // For home.html, redirect to index.html if not logged in
-    if ((!isLoggedIn || !token) && window.location.pathname.endsWith("home.html")) {
+    // Only redirect for protected pages, don't redirect index or public pages
+    if ((!isLoggedIn || !token) && 
+        (window.location.pathname.endsWith("home.html") || 
+         window.location.pathname.endsWith("add-post.html") || 
+         window.location.pathname.endsWith("edit-post.html"))) {
         window.location.href = "index.html";
     }
 }
@@ -154,12 +154,14 @@ function setupHomeLinks() {
     const token = localStorage.getItem("token");
 
     homeLinks.forEach(link => {
-        // Update href dynamically based on login status
-        link.href = isLoggedIn && token ? "home.html" : "index.html";
+        // Only change the home link if user is not logged in
+        if (!isLoggedIn || !token) {
+            link.href = "index.html";
+        }
     });
 }
 
-// Load blog posts from API
+// Load blog posts from localStorage
 async function loadPosts() {
     const postsContainer = document.getElementById("posts-container");
     if (!postsContainer) return;
@@ -173,35 +175,9 @@ async function loadPosts() {
             </div>
         `;
         
-        console.log('Attempting to fetch posts from /api/posts...');
+        // Get posts from localStorage
+        const blogPosts = JSON.parse(localStorage.getItem('posts') || '[]');
         
-        // Fetch blog posts from API
-        const response = await fetch('/api/posts');
-        
-        console.log('Fetch response status:', response.status, response.statusText);
-        console.log('Response headers:', response.headers);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Response error text:', errorText);
-            throw new Error(`Failed to fetch posts: ${response.status} ${response.statusText}`);
-        }
-        
-        // Get response as text first for debugging
-        const responseText = await response.text();
-        console.log('Response text:', responseText);
-        
-        // Try to parse as JSON
-        let blogPosts;
-        try {
-            blogPosts = responseText ? JSON.parse(responseText) : [];
-        } catch (parseError) {
-            console.error('JSON parsing error:', parseError);
-            throw new Error(`Failed to parse posts response: ${parseError.message}`);
-        }
-        
-        console.log('Successfully parsed posts:', blogPosts.length);
-
         if (blogPosts.length === 0) {
             postsContainer.innerHTML = "<p class='no-posts'>No blog posts available. Be the first to add one!</p>";
             return;
@@ -214,11 +190,11 @@ async function loadPosts() {
         const featuredPosts = blogPosts.sort(() => 0.5 - Math.random()).slice(0, 3);
         
         featuredPosts.forEach((post) => {
-            // Make sure we have an image, or use a placeholder
-            const imageSrc = post.image_url || 'https://via.placeholder.com/800x400';
+            // Use post image or placeholder
+            const imageSrc = post.image || 'https://via.placeholder.com/800x400';
             
             // Format the date
-            const formattedDate = new Date(post.created_at).toLocaleDateString();
+            const formattedDate = new Date(post.createdAt).toLocaleDateString();
             
             const postElement = document.createElement("article");
             postElement.classList.add("post-card");

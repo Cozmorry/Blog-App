@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - My Blog</title>
-    <link rel="stylesheet" href="css/modern-theme.css">
+    <title>Register</title>
+    <link rel="stylesheet" href="./public/css/modern-theme.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -14,13 +14,17 @@
                 <div class="logo">
                     <h1>My Blog</h1>
                 </div>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search posts...">
+                    <button id="search-button" title="Search"><i class="fas fa-search"></i></button>
+                </div>
                 <ul class="nav-links">
-                    <li><a href="index.html" id="home-link">Home</a></li>
-                    <li><a href="blog.html">Blog</a></li>
-                    <li><a href="about.html">About</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li id="login-link"><a href="login.html" class="auth-link login-link">Login</a></li>
-                    <li id="register-link"><a href="register.html" class="auth-link register-link active">Register</a></li>
+                    <li><a href="./index.html" id="home-link">Home</a></li>
+                    <li><a href="./blog.html">Blog</a></li>
+                    <li><a href="./about.html">About</a></li>
+                    <li><a href="./contact.html">Contact</a></li>
+                    <li id="login-link"><a href="./login.html" class="auth-link login-link">Login</a></li>
+                    <li id="register-link"><a href="./register.html" class="auth-link register-link active">Register</a></li>
                 </ul>
                 <div class="hamburger">
                     <span></span>
@@ -34,31 +38,36 @@
     <main>
         <section class="auth-section">
             <div class="auth-container">
-                <h2>Register</h2>
+                <h2>Create an Account</h2>
                 <div class="error-message" style="display: none;"></div>
                 <div class="success-message" style="display: none;"></div>
                 <form id="registerForm" class="auth-form">
                     <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" class="form-control" placeholder="Choose a username" required>
+                        <label for="registerUsername" class="form-label">Username</label>
+                        <input type="text" id="registerUsername" name="username" class="form-control" required>
                     </div>
+                    
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                        <label for="registerEmail" class="form-label">Email</label>
+                        <input type="email" id="registerEmail" name="email" class="form-control" required>
                     </div>
+                    
                     <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Create a password" required>
+                        <label for="registerPassword" class="form-label">Password</label>
+                        <input type="password" id="registerPassword" name="password" class="form-control" required>
                     </div>
+                    
                     <div class="form-group">
-                        <label for="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirm your password" required>
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required>
                     </div>
+                    
                     <button type="submit" class="submit-btn">Register</button>
+                    
+                    <div class="auth-switch">
+                        Already have an account? <a href="./login.html">Login here</a>
+                    </div>
                 </form>
-                <p class="auth-switch">
-                    Already have an account? <a href="login.html">Login here</a>
-                </p>
             </div>
         </section>
     </main>
@@ -74,6 +83,43 @@
         </div>
     </footer>
 
-    <script src="js/auth.js"></script>
+    <script src="./js/storage.js"></script>
+    <script src="./js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize hamburger menu
+            const hamburger = document.querySelector('.hamburger');
+            const navLinks = document.querySelector('.nav-links');
+            
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navLinks.classList.toggle('active');
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+                    hamburger.classList.remove('active');
+                    navLinks.classList.remove('active');
+                }
+            });
+            
+            // Initialize search functionality
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+
+            if (searchInput && searchButton) {
+                searchButton.addEventListener('click', () => {
+                    window.location.href = `./blog.html?search=${encodeURIComponent(searchInput.value)}`;
+                });
+                
+                searchInput.addEventListener('keyup', (e) => {
+                    if (e.key === 'Enter') {
+                        window.location.href = `./blog.html?search=${encodeURIComponent(searchInput.value)}`;
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html> 

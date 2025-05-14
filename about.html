@@ -4,8 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About - My Blog</title>
-    <link rel="stylesheet" href="css/modern-theme.css">
+    <link rel="stylesheet" href="./public/css/modern-theme.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .gallery-section, .values-section {
+            padding: var(--space-xxl) 0;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            color: var(--medium-gray);
+            margin-bottom: var(--space-lg);
+        }
+        
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+        
+        .gallery-item {
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: transform var(--transition-normal);
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            transition: transform var(--transition-normal);
+        }
+        
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+        
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-lg);
+            margin-top: var(--space-lg);
+        }
+        
+        .value-item {
+            text-align: center;
+            padding: var(--space-lg);
+            background-color: var(--white);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            transition: transform var(--transition-normal);
+        }
+        
+        .value-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .value-item i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: var(--space-md);
+        }
+        
+        .value-item h4 {
+            margin-bottom: var(--space-sm);
+            color: var(--dark);
+        }
+        
+        .value-item p {
+            color: var(--medium-gray);
+        }
+        
+        @media (max-width: 992px) {
+            .values-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .values-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-md);
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -14,14 +106,18 @@
                 <div class="logo">
                     <h1>My Blog</h1>
                 </div>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search posts...">
+                    <button id="search-button" title="Search"><i class="fas fa-search"></i></button>
+                </div>
                 <ul class="nav-links">
-                    <li><a href="home.html" id="home-link">Home</a></li>
-                    <li><a href="blog.html">Blog</a></li>
-                    <li><a href="about.html" class="active">About</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li id="login-link"><a href="login.html" class="auth-link login-link">Login</a></li>
-                    <li id="register-link"><a href="register.html" class="auth-link register-link">Register</a></li>
-                    <li id="add-post-btn" style="display: none;"><a href="add-post.html" class="add-post-link">Add Blog</a></li>
+                    <li><a href="./home.html" id="home-link">Home</a></li>
+                    <li><a href="./blog.html">Blog</a></li>
+                    <li><a href="./about.html" class="active">About</a></li>
+                    <li><a href="./contact.html">Contact</a></li>
+                    <li id="login-link"><a href="./login.html" class="auth-link login-link">Login</a></li>
+                    <li id="register-link"><a href="./register.html" class="auth-link register-link">Register</a></li>
+                    <li id="add-post-btn" style="display: none;"><a href="./add-post.html" class="add-post-link">Add Blog</a></li>
                     <li id="logout-btn" style="display: none;"><a href="#" onclick="logout()" class="logout-link">Logout</a></li>
                 </ul>
                 <div class="hamburger">
@@ -58,7 +154,7 @@
                         </ul>
                     </div>
                     <div class="about-image">
-                        <img src="https://via.placeholder.com/600x400" alt="About us image">
+                        <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Team working together on laptops" loading="lazy">
                     </div>
                 </div>
             </div>
@@ -69,19 +165,68 @@
                 <h3>Our Team</h3>
                 <div class="team-grid">
                     <div class="team-member">
-                        <img src="https://via.placeholder.com/300x300" alt="Team member">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=300&q=80" alt="John Doe" loading="lazy">
                         <h4>John Doe</h4>
                         <p>Founder & Lead Developer</p>
                     </div>
                     <div class="team-member">
-                        <img src="https://via.placeholder.com/300x300" alt="Team member">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=300&q=80" alt="Jane Smith" loading="lazy">
                         <h4>Jane Smith</h4>
                         <p>Content Writer</p>
                     </div>
                     <div class="team-member">
-                        <img src="https://via.placeholder.com/300x300" alt="Team member">
+                        <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&h=300&q=80" alt="Mike Johnson" loading="lazy">
                         <h4>Mike Johnson</h4>
                         <p>Tech Editor</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="gallery-section">
+            <div class="container">
+                <h3>Our Workspace</h3>
+                <p class="section-subtitle">A glimpse into our creative environment where ideas come to life</p>
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Modern office workspace" loading="lazy">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1497215842964-222b430dc094?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Collaboration meeting" loading="lazy">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Team brainstorming" loading="lazy">
+                    </div>
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Planning board" loading="lazy">
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="values-section">
+            <div class="container">
+                <h3>Our Values</h3>
+                <div class="values-grid">
+                    <div class="value-item">
+                        <i class="fas fa-lightbulb"></i>
+                        <h4>Innovation</h4>
+                        <p>We constantly seek new ideas and approaches to improve our platform.</p>
+                    </div>
+                    <div class="value-item">
+                        <i class="fas fa-users"></i>
+                        <h4>Community</h4>
+                        <p>We believe in the power of shared knowledge and collaborative growth.</p>
+                    </div>
+                    <div class="value-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <h4>Integrity</h4>
+                        <p>We're committed to honesty, transparency, and ethical practices.</p>
+                    </div>
+                    <div class="value-item">
+                        <i class="fas fa-heart"></i>
+                        <h4>Passion</h4>
+                        <p>We're driven by our love for technology and helping others succeed.</p>
                     </div>
                 </div>
             </div>
@@ -99,6 +244,43 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
+    <script src="./js/storage.js"></script>
+    <script src="./js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize hamburger menu
+            const hamburger = document.querySelector('.hamburger');
+            const navLinks = document.querySelector('.nav-links');
+            
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navLinks.classList.toggle('active');
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+                    hamburger.classList.remove('active');
+                    navLinks.classList.remove('active');
+                }
+            });
+            
+            // Initialize search functionality
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+
+            if (searchInput && searchButton) {
+                searchButton.addEventListener('click', () => {
+                    window.location.href = `./blog.html?search=${encodeURIComponent(searchInput.value)}`;
+                });
+                
+                searchInput.addEventListener('keyup', (e) => {
+                    if (e.key === 'Enter') {
+                        window.location.href = `./blog.html?search=${encodeURIComponent(searchInput.value)}`;
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html> 

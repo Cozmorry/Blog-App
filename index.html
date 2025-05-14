@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Blog</title>
-    <link rel="stylesheet" href="css/modern-theme.css">
+    <title>Blog Platform</title>
+    <link rel="stylesheet" href="./public/css/modern-theme.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -14,14 +14,18 @@
                 <div class="logo">
                     <h1>My Blog</h1>
                 </div>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search posts...">
+                    <button id="search-button" title="Search"><i class="fas fa-search"></i></button>
+                </div>
                 <ul class="nav-links">
-                    <li><a href="index.html" class="active">Home</a></li>
-                    <li><a href="blog.html">Blog</a></li>
-                    <li><a href="about.html">About</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li id="login-link"><a href="login.html" class="auth-link login-link">Login</a></li>
-                    <li id="register-link"><a href="register.html" class="auth-link register-link">Register</a></li>
-                    <li id="add-post-btn" style="display: none;"><a href="add-post.html" class="add-post-link">Add Blog</a></li>
+                    <li><a href="./home.html">Home</a></li>
+                    <li><a href="./blog.html">Blog</a></li>
+                    <li><a href="./about.html">About</a></li>
+                    <li><a href="./contact.html">Contact</a></li>
+                    <li id="login-link"><a href="./login.html" class="auth-link login-link">Login</a></li>
+                    <li id="register-link"><a href="./register.html" class="auth-link register-link">Register</a></li>
+                    <li id="add-post-btn" style="display: none;"><a href="./add-post.html" class="add-post-link">Add Blog</a></li>
                     <li id="logout-btn" style="display: none;"><a href="#" onclick="logout()" class="logout-link">Logout</a></li>
                 </ul>
                 <div class="hamburger">
@@ -35,15 +39,43 @@
 
     <main>
         <section class="hero">
-            <h2>Welcome to My Blog</h2>
-            <p>Discover interesting stories and insights</p>
-            <a href="login.html" class="cta-button">Get Started</a>
+            <div class="container">
+                <div class="hero-content">
+                    <h2>Welcome to My Blog</h2>
+                    <p>Share your thoughts and ideas with the world. Create engaging content and connect with readers across the globe.</p>
+                    <div class="hero-actions">
+                        <a href="./register.html" class="cta-button"><i class="fas fa-user-plus"></i> Join Now</a>
+                        <a href="./blog.html" class="secondary-btn"><i class="fas fa-book-reader"></i> Explore Posts</a>
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <section class="featured-posts">
-            <h3>Latest Posts</h3>
-            <div class="posts-grid" id="posts-container">
-                <!-- Blog posts will be dynamically inserted here -->
+        <section class="features-section">
+            <div class="container">
+                <h2 class="section-title">Why Choose Our Platform?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-pen-fancy"></i>
+                        <h3>Easy Content Creation</h3>
+                        <p>Our intuitive editor makes creating beautiful blog posts simple and enjoyable.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-users"></i>
+                        <h3>Growing Community</h3>
+                        <p>Connect with like-minded writers and build your audience.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-mobile-alt"></i>
+                        <h3>Mobile Friendly</h3>
+                        <p>Your blog looks great on any device, from desktop to smartphone.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Track Engagement</h3>
+                        <p>See how readers interact with your content through likes and comments.</p>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -59,6 +91,43 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
+    <script src="./js/storage.js"></script>
+    <script src="./js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize hamburger menu
+            const hamburger = document.querySelector('.hamburger');
+            const navLinks = document.querySelector('.nav-links');
+            
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navLinks.classList.toggle('active');
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+                    hamburger.classList.remove('active');
+                    navLinks.classList.remove('active');
+                }
+            });
+            
+            // Initialize search functionality
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+
+            if (searchInput && searchButton) {
+                searchButton.addEventListener('click', () => {
+                    window.location.href = `./blog.html?search=${encodeURIComponent(searchInput.value)}`;
+                });
+                
+                searchInput.addEventListener('keyup', (e) => {
+                    if (e.key === 'Enter') {
+                        window.location.href = `./blog.html?search=${encodeURIComponent(searchInput.value)}`;
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

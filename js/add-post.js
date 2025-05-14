@@ -2,9 +2,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if user is logged in
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
     
-    if (!isLoggedIn || !token) {
-        window.location.href = 'login.html';
+    if (!isLoggedIn || !token || !userId) {
+        window.location.href = './login.html';
+        return;
+    }
+
+    // Get the current user
+    const currentUser = userStorage.getCurrentUser();
+    if (!currentUser) {
+        window.location.href = './login.html';
         return;
     }
 
@@ -12,13 +20,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const addPostForm = document.getElementById('add-post-form');
     
     if (addPostForm) {
+        // Preview image functionality
+        const coverPhotoInput = document.getElementById('cover-photo');
+        let imageBase64 = null;
+        
+        if (coverPhotoInput) {
+            coverPhotoInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    // Read the file and convert to base64 for storage
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        imageBase64 = event.target.result;
+                        
+                        // Show preview if desired
+                        const previewContainer = document.querySelector('.preview-container');
+                        if (previewContainer) {
+                            previewContainer.innerHTML = `<img src="${imageBase64}" alt="Preview">`;
+                            previewContainer.style.display = 'block';
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
         addPostForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const title = document.getElementById('title').value;
             const content = document.getElementById('content').value;
             const category = document.getElementById('category').value;
-            const coverPhotoInput = document.getElementById('cover-photo');
             
             if (!title || !content || !category) {
                 alert('Please fill in all required fields');
@@ -32,62 +64,28 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
             
             try {
-                // Create form data for multipart/form-data submission (for file upload)
-                const formData = new FormData();
-                formData.append('title', title);
-                formData.append('content', content);
-                formData.append('category', category);
+                // Create new post object
+                const newPost = {
+                    id: Date.now().toString(),
+                    title,
+                    content,
+                    category,
+                    image: imageBase64, // Store image as base64 string
+                    userId: userId,
+                    author: currentUser.username,
+                    createdAt: new Date().toISOString()
+                };
                 
-                // Add image if selected
-                if (coverPhotoInput.files.length > 0) {
-                    formData.append('image', coverPhotoInput.files[0]);
-                }
-                
-                // Get the base URL of the site - use localStorage config if available
-                const apiBaseUrl = localStorage.getItem('apiBaseUrl') || 'http://localhost:3000';
-                const apiUrl = `${apiBaseUrl}/api/posts`;
-                
-                // Send the post data to the server
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: formData
-                });
-
-                let errorMessage = 'Failed to create post';
-                
-                if (!response.ok) {
-                    // Try to parse error message from response
-                    try {
-                        const errorData = await response.json();
-                        errorMessage = errorData.message || errorMessage;
-                    } catch (parseError) {
-                        console.error('Error parsing error response:', parseError);
-                        // If can't parse JSON, use status text
-                        errorMessage = `${errorMessage}: ${response.status} ${response.statusText}`;
-                    }
-                    throw new Error(errorMessage);
-                }
-
-                // Try to parse the response
-                let data;
-                try {
-                    const responseText = await response.text();
-                    // Only try to parse as JSON if there's content
-                    data = responseText ? JSON.parse(responseText) : {};
-                    console.log('Post created successfully:', data);
-                } catch (parseError) {
-                    console.error('Error parsing success response:', parseError);
-                    throw new Error('Server returned invalid response format');
-                }
+                // Save to localStorage
+                const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+                posts.push(newPost);
+                localStorage.setItem('posts', JSON.stringify(posts));
                 
                 // Show success message
                 alert('Post published successfully!');
                 
                 // Redirect to home page
-                window.location.href = 'home.html';
+                window.location.href = './home.html';
                 
             } catch (error) {
                 console.error('Error publishing post:', error);

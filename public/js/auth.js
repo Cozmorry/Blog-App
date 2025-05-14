@@ -78,55 +78,79 @@ if (authForm) {
 
 // Check if user is logged in
 function checkAuth() {
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = storage.getCurrentUser();
+    if (!user) {
+        window.location.href = '/login.html';
+        return false;
+    }
+    return true;
+}
+
+// Handle login form submission
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
     
-    if (token && user) {
-        // Update navigation based on auth status
-        const authLinks = document.querySelectorAll('.auth-link');
-        authLinks.forEach(link => {
-            if (link.classList.contains('login-link')) {
-                link.textContent = `Welcome, ${user.username}`;
-                link.href = '#';
-            } else if (link.classList.contains('register-link')) {
-                link.textContent = 'Logout';
-                link.href = '#';
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    window.location.href = '/';
-                });
-            }
-        });
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    try {
+        const user = storage.loginUser(email, password);
+        localStorage.setItem('token', 'dummy-token-' + Date.now()); // For compatibility
+        window.location.href = '/home.html';
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+// Handle registration form submission
+document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+    }
+    
+    try {
+        const user = storage.registerUser(username, email, password);
+        storage.loginUser(email, password); // Auto login after registration
+        localStorage.setItem('token', 'dummy-token-' + Date.now()); // For compatibility
+        window.location.href = '/home.html';
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+// Handle logout
+function logout() {
+    storage.logout();
+    localStorage.removeItem('token');
+    window.location.href = '/login.html';
+}
+
+// Update UI based on auth state
+function updateAuthUI() {
+    const user = storage.getCurrentUser();
+    const authLinks = document.getElementById('authLinks');
+    const userLinks = document.getElementById('userLinks');
+    
+    if (user) {
+        if (authLinks) authLinks.style.display = 'none';
+        if (userLinks) {
+            userLinks.style.display = 'block';
+            const usernameSpan = document.getElementById('username');
+            if (usernameSpan) usernameSpan.textContent = user.username;
+        }
+    } else {
+        if (authLinks) authLinks.style.display = 'block';
+        if (userLinks) userLinks.style.display = 'none';
     }
 }
 
-// Run auth check on page load
-document.addEventListener('DOMContentLoaded', () => {
-    // Login form is already handled by the main form handler above
-    // Registration form is already handled by the main form handler above
-    
-    // Helper function to show error messages
-    function showError(message) {
-        const errorElement = document.querySelector('.error-message');
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-            
-            setTimeout(() => {
-                errorElement.style.display = 'none';
-            }, 3000);
-        } else {
-            alert(message);
-        }
-    }
-    
-    // Check if user is already logged in using token (not just isLoggedIn flag)
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user'));
-    
-    if (token && user && (window.location.pathname.includes('login.html') || window.location.pathname.includes('register.html'))) {
-        window.location.href = 'home.html';
-    }
-});
+// Call updateAuthUI when page loads
+document.addEventListener('DOMContentLoaded', updateAuthUI);

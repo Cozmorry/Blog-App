@@ -596,4 +596,141 @@ async function displayFullPost(post) {
     }
 }
 
-// ... existing code ...
+// Load and display posts
+async function loadPosts() {
+    try {
+        const posts = storage.getPosts();
+        const postsContainer = document.getElementById('posts-container');
+        postsContainer.innerHTML = '';
+
+        for (const post of posts) {
+            const likes = storage.getPostLikes(post.id);
+            const comments = storage.getPostComments(post.id);
+            
+            const postElement = document.createElement('div');
+            postElement.className = 'post';
+            postElement.innerHTML = `
+                <h2>${post.title}</h2>
+                ${post.image_url ? `<img src="${post.image_url}" alt="Post image" class="post-image">` : ''}
+                <p>${post.content}</p>
+                <div class="post-meta">
+                    <span>By ${post.username}</span>
+                    <span>Category: ${post.category || 'Uncategorized'}</span>
+                    <span>Posted on: ${new Date(post.created_at).toLocaleDateString()}</span>
+                </div>
+                <div class="post-actions">
+                    <button onclick="toggleLike(${post.id})" class="like-btn ${likes.userLiked ? 'liked' : ''}">
+                        ❤️ ${likes.count} Likes
+                    </button>
+                    <button onclick="showComments(${post.id})">💬 ${comments.length} Comments</button>
+                    ${post.user_id === storage.getCurrentUser()?.id ? `
+                        <button onclick="editPost(${post.id})">✏️ Edit</button>
+                        <button onclick="deletePost(${post.id})">🗑️ Delete</button>
+                    ` : ''}
+                </div>
+                <div id="comments-${post.id}" class="comments-section" style="display: none;">
+                    <h3>Comments</h3>
+                    <div class="comments-list">
+                        ${comments.map(comment => `
+                            <div class="comment">
+                                <p>${comment.content}</p>
+                                <small>By ${comment.username} on ${new Date(comment.created_at).toLocaleDateString()}</small>
+                                ${comment.user_id === storage.getCurrentUser()?.id ? `
+                                    <button onclick="deleteComment(${comment.id}, ${post.id})">🗑️</button>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <form onsubmit="event.preventDefault(); addComment(${post.id})">
+                        <textarea id="comment-${post.id}" required></textarea>
+                        <button type="submit">Add Comment</button>
+                    </form>
+                </div>
+            `;
+            postsContainer.appendChild(postElement);
+        }
+    } catch (error) {
+        console.error('Error loading posts:', error);
+        alert('Error loading posts. Please try again later.');
+    }
+}
+
+// Toggle post like
+async function toggleLike(postId) {
+    try {
+        if (!storage.getCurrentUser()) {
+            window.location.href = '/login.html';
+            return;
+        }
+
+        const liked = storage.toggleLike(postId);
+        loadPosts(); // Refresh the display
+    } catch (error) {
+        console.error('Error toggling like:', error);
+        alert('Error toggling like. Please try again later.');
+    }
+}
+
+// Show/hide comments section
+function showComments(postId) {
+    const commentsSection = document.getElementById(`comments-${postId}`);
+    commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+}
+
+// Add a new comment
+async function addComment(postId) {
+    try {
+        if (!storage.getCurrentUser()) {
+            window.location.href = '/login.html';
+            return;
+        }
+
+        const commentTextarea = document.getElementById(`comment-${postId}`);
+        const content = commentTextarea.value.trim();
+        
+        if (!content) return;
+
+        storage.addComment(postId, content);
+        commentTextarea.value = '';
+        loadPosts(); // Refresh the display
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        alert('Error adding comment. Please try again later.');
+    }
+}
+
+// Delete a comment
+async function deleteComment(commentId, postId) {
+    try {
+        if (confirm('Are you sure you want to delete this comment?')) {
+            storage.deleteComment(commentId);
+            loadPosts(); // Refresh the display
+        }
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        alert('Error deleting comment. Please try again later.');
+    }
+}
+
+// Edit a post
+function editPost(postId) {
+    window.location.href = `/edit-post.html?id=${postId}`;
+}
+
+// Delete a post
+async function deletePost(postId) {
+    try {
+        if (confirm('Are you sure you want to delete this post?')) {
+            storage.deletePost(postId);
+            loadPosts(); // Refresh the display
+        }
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Error deleting post. Please try again later.');
+    }
+}
+
+// Load posts when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    loadPosts();
+});

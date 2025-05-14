@@ -2,9 +2,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if user is logged in
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
     
-    if (!isLoggedIn || !token) {
-        window.location.href = 'login.html';
+    if (!isLoggedIn || !token || !userId) {
+        window.location.href = './login.html';
         return;
     }
     
@@ -13,67 +14,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!postId) {
         // No post ID found, redirect to home
         alert('No post selected for editing');
-        window.location.href = 'home.html';
+        window.location.href = './home.html';
         return;
     }
     
     // Load the post data for editing
     loadPostForEditing(postId);
-    
-    // Set up form submission
-    const editForm = document.getElementById('edit-post-form');
-    if (editForm) {
-        editForm.addEventListener('submit', handleFormSubmit);
-    }
 });
 
-// Load post data for editing
-async function loadPostForEditing(postId) {
+// Load post data from localStorage for editing
+function loadPostForEditing(postId) {
     try {
         // Show loading message
         document.getElementById('loading-message').style.display = 'flex';
         document.getElementById('edit-post-form').style.display = 'none';
         
-        const token = localStorage.getItem('token');
-        
-        // Get the base URL of the site - use localStorage config if available
-        const apiBaseUrl = localStorage.getItem('apiBaseUrl') || 'http://localhost:3000';
-        const apiUrl = `${apiBaseUrl}/api/posts/${postId}`;
-        
-        // Fetch post data from the API
-        const response = await fetch(apiUrl, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            // Try to get error details from response
-            let errorMessage;
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.message || `Status ${response.status}: ${response.statusText}`;
-            } catch (parseError) {
-                errorMessage = `Status ${response.status}: ${response.statusText}`;
-            }
-            
-            throw new Error(`Failed to fetch post data: ${errorMessage}`);
-        }
-        
-        // Try to parse the response
-        let postToEdit;
-        try {
-            const responseText = await response.text();
-            postToEdit = responseText ? JSON.parse(responseText) : null;
-        } catch (parseError) {
-            console.error('Error parsing post response:', parseError);
-            throw new Error('Server returned invalid response format');
-        }
+        // Get posts from localStorage
+        const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+        const postToEdit = posts.find(post => post.id === postId);
         
         if (!postToEdit) {
             throw new Error('Post not found');
+        }
+        
+        // Check if the user is the author of the post
+        const userId = localStorage.getItem('userId');
+        if (postToEdit.userId !== userId) {
+            throw new Error('You are not authorized to edit this post');
         }
         
         // Hide the loading message and show the form
@@ -101,18 +68,41 @@ async function loadPostForEditing(postId) {
         const currentImage = document.getElementById('current-image');
         const imageContainer = document.getElementById('current-image-container');
         
-        if (postToEdit.image_url) {
-            currentImage.src = postToEdit.image_url;
+        if (postToEdit.image) {
+            currentImage.src = postToEdit.image;
             imageContainer.style.display = 'block';
         } else {
             imageContainer.style.display = 'none';
+        }
+        
+        // Set up image preview for new uploads
+        const coverPhotoInput = document.getElementById('cover-photo');
+        if (coverPhotoInput) {
+            coverPhotoInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    // Read the file and convert to base64 for storage
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        currentImage.src = event.target.result;
+                        imageContainer.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Set up form submission
+        const editForm = document.getElementById('edit-post-form');
+        if (editForm) {
+            editForm.addEventListener('submit', handleFormSubmit);
         }
     } catch (error) {
         console.error('Error loading post:', error);
         document.getElementById('loading-message').innerHTML = `
             <div class="error-message">
                 <p>Failed to load post data: ${error.message}</p>
-                <button onclick="window.location.href='home.html'" class="secondary-btn">Back to Home</button>
+                <button onclick="window.location.href='./home.html'" class="secondary-btn">Back to Home</button>
             </div>
         `;
     }
@@ -140,50 +130,58 @@ async function handleFormSubmit(e) {
         submitBtn.textContent = 'Updating...';
         submitBtn.disabled = true;
         
-        const token = localStorage.getItem('token');
+        // Get posts from localStorage
+        const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+        const postIndex = posts.findIndex(post => post.id === postId);
         
-        // Create form data for multipart/form-data submission
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('content', content);
-        formData.append('category', category);
+        if (postIndex === -1) {
+            throw new Error('Post not found');
+        }
         
-        // Check if a new image is being uploaded
+        // Get the post to update
+        const postToUpdate = posts[postIndex];
+        
+        // Check if the user is the author of the post
+        const userId = localStorage.getItem('userId');
+        if (postToUpdate.userId !== userId) {
+            throw new Error('You are not authorized to edit this post');
+        }
+        
+        // Update post data
+        postToUpdate.title = title;
+        postToUpdate.content = content;
+        postToUpdate.category = category;
+        postToUpdate.updatedAt = new Date().toISOString();
+        
+        // Update image if a new one is selected
         if (coverPhotoInput.files.length > 0) {
-            formData.append('image', coverPhotoInput.files[0]);
+            const file = coverPhotoInput.files[0];
+            const reader = new FileReader();
+            
+            // Convert to Promise to use async/await
+            const readFileAsDataURL = () => {
+                return new Promise((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            };
+            
+            // Update the image
+            postToUpdate.image = await readFileAsDataURL();
         }
         
-        // Get the base URL of the site - use localStorage config if available
-        const apiBaseUrl = localStorage.getItem('apiBaseUrl') || 'http://localhost:3000';
-        const apiUrl = `${apiBaseUrl}/api/posts/${postId}`;
+        // Update the post in the posts array
+        posts[postIndex] = postToUpdate;
         
-        // Update the post via API
-        const response = await fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-        
-        if (!response.ok) {
-            // Try to parse error message
-            let errorMessage = 'Failed to update post';
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.message || errorMessage;
-            } catch (parseError) {
-                console.error('Error parsing error response:', parseError);
-                errorMessage = `${errorMessage}: ${response.status} ${response.statusText}`;
-            }
-            throw new Error(errorMessage);
-        }
+        // Save back to localStorage
+        localStorage.setItem('posts', JSON.stringify(posts));
         
         // Show success message
         alert('Post updated successfully!');
         
         // Redirect back to home page
-        window.location.href = 'home.html';
+        window.location.href = './home.html';
     } catch (error) {
         console.error('Error updating post:', error);
         alert('Failed to update post: ' + error.message);
