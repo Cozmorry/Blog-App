@@ -125,10 +125,11 @@ app.get('/add-post', (req, res) => {
 
 // Database connection
 const db = mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'blog_platform'
+    host: process.env.MYSQLHOST || 'localhost',
+    user: process.env.MYSQLUSER || 'root',
+    password: process.env.MYSQLPASSWORD || '',
+    database: process.env.MYSQLDATABASE || 'blog_platform',
+    port: process.env.MYSQLPORT || 3306
 });
 
 // Connect to database
